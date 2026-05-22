@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>LDK.RideClub.Bot</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LDK.RideClub.Bot.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LDK.RideClub.Bot.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LDK.RideClub.Bot.Abstractions\LDK.RideClub.Bot.Abstractions.csproj" />
+    <ProjectReference Include="..\LDK.RideClub.Bot.Adapters.WhatsApp\LDK.RideClub.Bot.Adapters.WhatsApp.csproj" />
+    <ProjectReference Include="..\LDK.RideClub.Bot.Domain\LDK.RideClub.Bot.Domain.csproj" />
+    <ProjectReference Include="..\LDK.RideClub.Bot.Persistence\LDK.RideClub.Bot.Persistence.csproj" />
+    <ProjectReference Include="..\LDK.RideClub.Bot.Observability\LDK.RideClub.Bot.Observability.csproj" />
+  </ItemGroup>
+
+</Project>

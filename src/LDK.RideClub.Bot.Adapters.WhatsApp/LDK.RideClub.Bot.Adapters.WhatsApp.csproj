@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LDK.RideClub.Bot.Abstractions\LDK.RideClub.Bot.Abstractions.csproj" />
+    <ProjectReference Include="..\LDK.RideClub.Bot.Domain\LDK.RideClub.Bot.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

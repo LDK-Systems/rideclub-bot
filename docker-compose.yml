@@ -1,0 +1,40 @@
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DEPLOYMENT_MODE=kestrel
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Persistence__SqliteConnectionString=Data Source=/data/rideclub.db
+      - Otlp__Endpoint=http://aspire-dashboard:18889
+      - Otlp__ServiceName=rideclub-bot
+      - Webhooks__BasePath=/webhooks
+      - Adapters__WhatsApp__VerifyToken=dev-verify-token
+      - Adapters__WhatsApp__AccessToken=dev-access-token
+      - Adapters__WhatsApp__PhoneNumberId=123456789
+      - Deployment__Mode=Kestrel
+    volumes:
+      - bot-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: on-failure:3
+    depends_on:
+      aspire-dashboard:
+        condition: service_started
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+    ports:
+      - "18888:18888"  # Dashboard UI
+    environment:
+      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+
+volumes:
+  bot-data:

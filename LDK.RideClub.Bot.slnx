@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="src/LDK.RideClub.Bot/RideClub.Bot.csproj" />
+  <Project Path="src/LDK.RideClub.Bot.Abstractions/LDK.RideClub.Bot.Abstractions.csproj" />
+  <Project Path="src/LDK.RideClub.Bot.Domain/LDK.RideClub.Bot.Domain.csproj" />
+  <Project Path="src/LDK.RideClub.Bot.Adapters.WhatsApp/LDK.RideClub.Bot.Adapters.WhatsApp.csproj" />
+  <Project Path="src/LDK.RideClub.Bot.Persistence/LDK.RideClub.Bot.Persistence.csproj" />
+  <Project Path="src/LDK.RideClub.Bot.Observability/LDK.RideClub.Bot.Observability.csproj" />
+  <Project Path="tests/LDK.RideClub.Bot.Tests/LDK.RideClub.Bot.Tests.csproj" />
+</Solution>

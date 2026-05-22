@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+
+    <IsPackable>false</IsPackable>
+
+    <RootNamespace>LDK.RideClub.Bot.Tests</RootNamespace>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+
+    <!-- Test Framework -->
+
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+
+    <PackageReference Include="xunit" />
+
+    <PackageReference Include="xunit.runner.visualstudio" />
+
+    <PackageReference Include="coverlet.collector" />
+
+    <!-- Mocking & Assertions -->
+
+    <PackageReference Include="NSubstitute" />
+
+    <PackageReference Include="FluentAssertions" />
+
+    <!-- Property-Based Testing -->
+
+    <PackageReference Include="FsCheck.Xunit" />
+
+    <!-- Integration Testing -->
+
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+
+    <ProjectReference Include="../../src/LDK.RideClub.Bot/RideClub.Bot.csproj" />
+
+    <ProjectReference Include="../../src/LDK.RideClub.Bot.Abstractions/LDK.RideClub.Bot.Abstractions.csproj" />
+
+    <ProjectReference Include="../../src/LDK.RideClub.Bot.Domain/LDK.RideClub.Bot.Domain.csproj" />
+
+    <ProjectReference Include="../../src/LDK.RideClub.Bot.Persistence/LDK.RideClub.Bot.Persistence.csproj" />
+
+    <ProjectReference Include="../../src/LDK.RideClub.Bot.Adapters.WhatsApp/LDK.RideClub.Bot.Adapters.WhatsApp.csproj" />
+
+    <ProjectReference Include="../../src/LDK.RideClub.Bot.Observability/LDK.RideClub.Bot.Observability.csproj" />
+
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,41 @@
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# Git
+.git/
+.gitignore
+
+# IDE and editor files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Test results
+**/TestResults/
+**/coverage*/
+
+# Docker
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore
+
+# Documentation and specs
+.kiro/
+README.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+*.env
+
+# Logs
+**/[Ll]og/
+**/[Ll]ogs/
+*.log

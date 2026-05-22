@@ -1,0 +1,58 @@
+[*.cs]
+
+# Allow underscores in test method names (e.g., Should_Return_200_When_Healthy)
+dotnet_diagnostic.CA1707.severity = none
+
+# Suppress IDE0058 (expression value never used) in test projects — common with FluentAssertions
+dotnet_diagnostic.IDE0058.severity = none
+
+# Suppress IDE0290 (use primary constructor) in test projects — not always appropriate for test fixtures
+dotnet_diagnostic.IDE0290.severity = none
+
+# Suppress IDE1006 (naming rule violation) in test projects — test fields may use different conventions
+dotnet_diagnostic.IDE1006.severity = suggestion
+
+# Suppress IDE0005 (unnecessary using) in test projects — may be needed for future tests
+dotnet_diagnostic.IDE0005.severity = suggestion
+
+# Suppress CA1062 (validate parameters) in test projects — test methods receive validated fixture params
+dotnet_diagnostic.CA1062.severity = none
+
+# Suppress CA2000 (dispose objects) in test projects — test framework manages lifetimes
+dotnet_diagnostic.CA2000.severity = suggestion
+
+# Suppress CA2234 (use Uri overload) in test projects — string URLs are clearer in tests
+dotnet_diagnostic.CA2234.severity = suggestion
+
+# Suppress CA1859 (use concrete type) in test projects — interface types used for testing contracts
+dotnet_diagnostic.CA1859.severity = suggestion
+
+# Suppress CA2263 (prefer generic overload) in test projects
+dotnet_diagnostic.CA2263.severity = suggestion
+
+# Suppress IDE0046 (simplify if) in test projects — explicit if statements improve test readability
+dotnet_diagnostic.IDE0046.severity = suggestion
+
+# Suppress IDE0078 (use pattern matching) in test projects
+dotnet_diagnostic.IDE0078.severity = suggestion
+
+# Suppress IDE0061 (use block body for local function) in test projects
+dotnet_diagnostic.IDE0061.severity = suggestion
+
+# Suppress IDE0305 (collection initialization) in test projects
+dotnet_diagnostic.IDE0305.severity = suggestion
+
+# Suppress IDE0200 (lambda can be removed) in test projects
+dotnet_diagnostic.IDE0200.severity = suggestion
+
+# Suppress IDE0350 (lambda can be simplified) in test projects
+dotnet_diagnostic.IDE0350.severity = suggestion
+
+# Internal classes instantiated via test framework reflection
+dotnet_diagnostic.CA1812.severity = none
+
+# ConfigureAwait not required in test projects
+dotnet_diagnostic.CA2007.severity = none
+
+# Suppress missing XML documentation in test projects
+dotnet_diagnostic.CS1591.severity = none
