@@ -1,5 +1,6 @@
 # Stage 1: Build and publish
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy solution-level files for restore
@@ -23,7 +24,7 @@ RUN dotnet restore
 COPY src/ src/
 
 # Publish the application
-RUN dotnet publish src/LDK.RideClub.Bot/RideClub.Bot.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish src/LDK.RideClub.Bot/RideClub.Bot.csproj -c "${BUILD_CONFIGURATION}" -o /app/publish --no-restore
 
 # Stage 2: Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
