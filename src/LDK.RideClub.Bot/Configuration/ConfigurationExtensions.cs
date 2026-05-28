@@ -76,16 +76,11 @@ internal static class ConfigurationExtensions
     /// <summary>
     /// Scans referenced adapter assemblies for <see cref="IAdapterOptionsRegistration"/>
     /// implementations and invokes them to register adapter-specific options.
+    /// Uses the same assembly set as Autofac's <c>RegisterAssemblyModules</c> call.
     /// </summary>
     private static void RegisterAdapterOptions(IServiceCollection services, IConfiguration configuration)
     {
-        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-        IEnumerable<Assembly> adapterAssemblies = Directory
-            .GetFiles(baseDirectory, "LDK.RideClub.Bot.Adapters.*.dll")
-            .Select(Assembly.LoadFrom);
-
-        foreach (Assembly assembly in adapterAssemblies)
+        foreach (Assembly assembly in AdapterAssemblyDiscovery.Assemblies)
         {
             IEnumerable<Type> registrationTypes = assembly.GetExportedTypes()
                 .Where(t => t is { IsAbstract: false, IsInterface: false } &&

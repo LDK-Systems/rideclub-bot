@@ -38,11 +38,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
     // This is Autofac's native assembly-scanning mechanism — any assembly in the output directory
     // named "LDK.RideClub.Bot.Adapters.*.dll" that contains a Module subclass will be loaded
     // automatically, requiring no explicit registration per adapter.
-    System.Reflection.Assembly[] adapterAssemblies = [.. Directory
-        .GetFiles(AppDomain.CurrentDomain.BaseDirectory, "LDK.RideClub.Bot.Adapters.*.dll")
-        .Select(System.Reflection.Assembly.LoadFrom)];
-
-    _ = containerBuilder.RegisterAssemblyModules(adapterAssemblies);
+    _ = containerBuilder.RegisterAssemblyModules(LDK.RideClub.Bot.Configuration.AdapterAssemblyDiscovery.Assemblies);
 });
 
 // Step 4: Add AWS Lambda hosting when mode is "lambda" (Req 13.2)

@@ -139,15 +139,15 @@ This plan integrates MediatR for in-process command/event dispatching and MassTr
     - Verify structured log entries include trace/span identifiers
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 9. Integration testing
-  - [-] 9.1 Write integration test for the full pipeline
+- [x] 9. Integration testing
+  - [x] 9.1 Write integration test for the full pipeline
     - Configure `BotWebApplicationFactory` to include MassTransit test harness mode
     - Test webhook → EventDispatcher → Mediator → Handler → Bus → State Machine flow
     - Verify state machine transitions occur correctly end-to-end
     - Ensure tests run without network access or Docker
     - _Requirements: 10.3, 10.4_
 
-  - [-] 9.2 Write FsCheck property-based test for EventDispatcher mapping
+  - [x] 9.2 Write FsCheck property-based test for EventDispatcher mapping
     - Generate arbitrary valid `InboundEvent` instances with various payload types
     - Verify: for all valid InboundEvent instances, EventDispatcher produces exactly one Command send or one Notification publish through the Mediator
     - _Requirements: 10.5_
