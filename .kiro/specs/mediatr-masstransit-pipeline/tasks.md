@@ -62,7 +62,7 @@ This plan integrates MediatR for in-process command/event dispatching and MassTr
     - If MassTransit Bus publish fails, log warning and continue without blocking
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 8.1, 8.2, 8.3, 8.5_
 
-  - [-] 3.2 Write unit tests for EventDispatcher
+  - [x] 3.2 Write unit tests for EventDispatcher
     - Test text message payload maps to ProcessTextMessageCommand
     - Test command payload maps to ProcessBotCommandCommand
     - Test unknown payload publishes UnrecognisedEventNotification
@@ -140,14 +140,14 @@ This plan integrates MediatR for in-process command/event dispatching and MassTr
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
 - [ ] 9. Integration testing
-  - [ ] 9.1 Write integration test for the full pipeline
+  - [-] 9.1 Write integration test for the full pipeline
     - Configure `BotWebApplicationFactory` to include MassTransit test harness mode
     - Test webhook → EventDispatcher → Mediator → Handler → Bus → State Machine flow
     - Verify state machine transitions occur correctly end-to-end
     - Ensure tests run without network access or Docker
     - _Requirements: 10.3, 10.4_
 
-  - [ ] 9.2 Write FsCheck property-based test for EventDispatcher mapping
+  - [-] 9.2 Write FsCheck property-based test for EventDispatcher mapping
     - Generate arbitrary valid `InboundEvent` instances with various payload types
     - Verify: for all valid InboundEvent instances, EventDispatcher produces exactly one Command send or one Notification publish through the Mediator
     - _Requirements: 10.5_
