@@ -5,6 +5,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" />
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LDK.RideClub.Bot.Abstractions\LDK.RideClub.Bot.Abstractions.csproj" />
     <ProjectReference Include="..\LDK.RideClub.Bot.Domain\LDK.RideClub.Bot.Domain.csproj" />
   </ItemGroup>

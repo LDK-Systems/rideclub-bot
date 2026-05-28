@@ -2,7 +2,11 @@
 // RideClub Bot — ConfigurationExtensions (Req 5.1, 5.2, 5.6, 5.7)
 // ---------------------------------------------------------------------------
 
+using System.Reflection;
+
 using FluentValidation;
+
+using LDK.RideClub.Bot.Abstractions.Messaging;
 
 using Microsoft.Extensions.Options;
 
@@ -28,19 +32,22 @@ internal static class ConfigurationExtensions
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        // Register FluentValidation validators
+        // Register FluentValidation validators for host-level options
         _ = services.AddSingleton<IValidator<WebhookOptions>, WebhookOptionsValidator>();
-        _ = services.AddSingleton<IValidator<WhatsAppOptions>, WhatsAppOptionsValidator>();
         _ = services.AddSingleton<IValidator<PersistenceOptions>, PersistenceOptionsValidator>();
         _ = services.AddSingleton<IValidator<OtlpOptions>, OtlpOptionsValidator>();
         _ = services.AddSingleton<IValidator<DeploymentOptions>, DeploymentOptionsValidator>();
+        _ = services.AddSingleton<IValidator<MassTransitOptions>, MassTransitOptionsValidator>();
 
-        // Bind and validate each options section
+        // Bind and validate each host-level options section
         RegisterOptions<WebhookOptions>(services, configuration, WebhookOptions.SectionName);
-        RegisterOptions<WhatsAppOptions>(services, configuration, WhatsAppOptions.SectionName);
         RegisterOptions<PersistenceOptions>(services, configuration, PersistenceOptions.SectionName);
         RegisterOptions<OtlpOptions>(services, configuration, OtlpOptions.SectionName);
         RegisterOptions<DeploymentOptions>(services, configuration, DeploymentOptions.SectionName);
+        RegisterOptions<MassTransitOptions>(services, configuration, MassTransitOptions.SectionName);
+
+        // Discover and invoke adapter options registrations from referenced adapter assemblies.
+        RegisterAdapterOptions(services, configuration);
 
         // Register IOptionsMonitor change callbacks for runtime validation
         _ = services.AddSingleton<IHostedService, OptionsChangeMonitorService>();
@@ -64,5 +71,31 @@ internal static class ConfigurationExtensions
             IValidator<TOptions> validator = sp.GetRequiredService<IValidator<TOptions>>();
             return new FluentValidationOptionsValidator<TOptions>(validator);
         });
+    }
+
+    /// <summary>
+    /// Scans referenced adapter assemblies for <see cref="IAdapterOptionsRegistration"/>
+    /// implementations and invokes them to register adapter-specific options.
+    /// </summary>
+    private static void RegisterAdapterOptions(IServiceCollection services, IConfiguration configuration)
+    {
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+        IEnumerable<Assembly> adapterAssemblies = Directory
+            .GetFiles(baseDirectory, "LDK.RideClub.Bot.Adapters.*.dll")
+            .Select(Assembly.LoadFrom);
+
+        foreach (Assembly assembly in adapterAssemblies)
+        {
+            IEnumerable<Type> registrationTypes = assembly.GetExportedTypes()
+                .Where(t => t is { IsAbstract: false, IsInterface: false } &&
+                            t.IsAssignableTo(typeof(IAdapterOptionsRegistration)));
+
+            foreach (Type registrationType in registrationTypes)
+            {
+                var registration = (IAdapterOptionsRegistration)Activator.CreateInstance(registrationType)!;
+                registration.RegisterOptions(services, configuration);
+            }
+        }
     }
 }

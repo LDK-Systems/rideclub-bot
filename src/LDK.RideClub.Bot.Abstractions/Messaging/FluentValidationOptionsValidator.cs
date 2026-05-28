@@ -6,7 +6,7 @@ using FluentValidation;
 
 using Microsoft.Extensions.Options;
 
-namespace LDK.RideClub.Bot.Configuration;
+namespace LDK.RideClub.Bot.Abstractions.Messaging;
 
 /// <summary>
 /// Bridges FluentValidation validators with the .NET Options validation system.
@@ -15,7 +15,7 @@ namespace LDK.RideClub.Bot.Configuration;
 /// </summary>
 /// <typeparam name="TOptions">The options type to validate.</typeparam>
 /// <param name="validator">The FluentValidation validator for the options type.</param>
-internal sealed class FluentValidationOptionsValidator<TOptions>(IValidator<TOptions> validator)
+public sealed class FluentValidationOptionsValidator<TOptions>(IValidator<TOptions> validator)
     : IValidateOptions<TOptions>
     where TOptions : class
 {

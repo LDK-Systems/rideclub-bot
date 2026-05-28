@@ -5,6 +5,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LDK.RideClub.Bot.Domain\LDK.RideClub.Bot.Domain.csproj" />
   </ItemGroup>
 

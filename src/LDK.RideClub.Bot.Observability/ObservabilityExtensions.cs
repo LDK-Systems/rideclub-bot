@@ -30,6 +30,18 @@ public static class ObservabilityExtensions
     public const string MessagingActivitySourceName = "LDK.RideClub.Bot.Messaging";
 
     /// <summary>
+    /// <see cref="System.Diagnostics.ActivitySource"/> name used by the MediatR
+    /// <c>TelemetryBehavior</c> to emit mediator dispatch spans.
+    /// </summary>
+    public const string MediatorActivitySourceName = "RideClub.Bot.Mediator";
+
+    /// <summary>
+    /// <see cref="System.Diagnostics.ActivitySource"/> name used by MassTransit
+    /// for saga transition and message transport spans.
+    /// </summary>
+    public const string MassTransitActivitySourceName = "MassTransit";
+
+    /// <summary>
     /// Adds OpenTelemetry tracing and metrics to the service collection, configured
     /// with ASP.NET Core, HttpClient, and Entity Framework Core instrumentation.
     /// Telemetry is exported via OTLP to the endpoint specified in the "Otlp"
@@ -60,7 +72,9 @@ public static class ObservabilityExtensions
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddEntityFrameworkCoreInstrumentation()
-                .AddSource(MessagingActivitySourceName);
+                .AddSource(MessagingActivitySourceName)
+                .AddSource(MediatorActivitySourceName)
+                .AddSource(MassTransitActivitySourceName);
 
             if (hasValidEndpoint)
             {

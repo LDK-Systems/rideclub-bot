@@ -25,11 +25,24 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // Step 3: Configure Autofac as the DI container (Req 1.3)
 builder.Host.UseServiceProviderFactory(new Autofac.Extensions.DependencyInjection.AutofacServiceProviderFactory());
 
-builder.Host.ConfigureContainer<Autofac.ContainerBuilder>(containerBuilder =>
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
+    // Register host-level modules explicitly.
     _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.MessagingModule());
     _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.PersistenceModule());
     _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.ObservabilityModule());
+    _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.SagaModule());
+    _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.MediatorModule());
+
+    // Discover and load adapter Autofac modules from assemblies matching the naming convention.
+    // This is Autofac's native assembly-scanning mechanism — any assembly in the output directory
+    // named "LDK.RideClub.Bot.Adapters.*.dll" that contains a Module subclass will be loaded
+    // automatically, requiring no explicit registration per adapter.
+    System.Reflection.Assembly[] adapterAssemblies = [.. Directory
+        .GetFiles(AppDomain.CurrentDomain.BaseDirectory, "LDK.RideClub.Bot.Adapters.*.dll")
+        .Select(System.Reflection.Assembly.LoadFrom)];
+
+    _ = containerBuilder.RegisterAssemblyModules(adapterAssemblies);
 });
 
 // Step 4: Add AWS Lambda hosting when mode is "lambda" (Req 13.2)
@@ -55,6 +68,9 @@ builder.Services.AddApplicationOptions(builder.Configuration);
 
 // Step 6c: Register EF Core persistence with SQLite provider (Req 9.2, 9.5)
 builder.Services.AddBotPersistence(builder.Configuration);
+
+// Step 6c2: Register MassTransit with saga state machine and in-memory transport (Req 5.3, 5.4, 5.5)
+builder.Services.AddBotMassTransit(builder.Configuration);
 
 // Step 6d: Register OpenTelemetry observability pipeline (Req 11.1, 11.2)
 builder.Services.AddBotObservability(builder.Configuration);

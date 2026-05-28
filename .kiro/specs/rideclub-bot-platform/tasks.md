@@ -87,7 +87,7 @@ Transform the existing skeleton console app into a full ASP.NET Core platform wi
     - Return 413 Content Too Large when exceeded
     - _Requirements: 7.9_
 
-- [~] 4. Checkpoint - Ensure solution builds
+- [x] 4. Checkpoint - Ensure solution builds
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 5. Implement the WhatsApp messaging adapter
@@ -173,7 +173,7 @@ Transform the existing skeleton console app into a full ASP.NET Core platform wi
     - Wire observability extensions into the DI container
     - _Requirements: 11.1, 11.2_
 
-- [~] 8. Checkpoint - Ensure solution builds and core pipeline works
+- [x] 8. Checkpoint - Ensure solution builds and core pipeline works
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 9. Implement containerisation and docker-compose
@@ -196,7 +196,7 @@ Transform the existing skeleton console app into a full ASP.NET Core platform wi
     - Map /health endpoint returning 200 OK when healthy
     - _Requirements: 10.2, 12.5_
 
-- [ ] 10. Implement testing infrastructure
+- [x] 10. Implement testing infrastructure
   - [x] 10.1 Create the LDK.RideClub.Bot.Tests xUnit project
     - Create `tests/LDK.RideClub.Bot.Tests/LDK.RideClub.Bot.Tests.csproj`
     - Add PackageReferences: xunit, xunit.runner.visualstudio, coverlet.collector, NSubstitute, FluentAssertions, FsCheck.Xunit, Microsoft.AspNetCore.Mvc.Testing, Microsoft.EntityFrameworkCore.InMemory
@@ -212,13 +212,13 @@ Transform the existing skeleton console app into a full ASP.NET Core platform wi
     - Register mock adapters as needed
     - _Requirements: 12.3, 12.4_
 
-  - [-] 10.3 Implement health check smoke test
+  - [x] 10.3 Implement health check smoke test
     - Create `Integration/HealthCheckTests.cs`
     - Use BotWebApplicationFactory to start the host in-memory
     - Issue HTTP GET to /health and assert 200 OK within 5 seconds
     - _Requirements: 12.5_
 
-  - [-] 10.4 Write property tests for architectural constraints (Properties 1-4, 7)
+  - [x] 10.4 Write property tests for architectural constraints (Properties 1-4, 7)
     - **Property 1: Constructor Dependency Limit** — scan application assemblies, verify no constructor exceeds 5 params (excluding single cross-cutting concern)
     - **Property 2: Dependencies on Abstractions** — verify logging/persistence/messaging params are interface types
     - **Property 3: No Service Locator Pattern** — verify no IServiceProvider usage outside composition root
@@ -226,7 +226,7 @@ Transform the existing skeleton console app into a full ASP.NET Core platform wi
     - **Property 7: No Raw JSON in Component Interfaces** — verify no string/Dictionary/dynamic/JsonElement for domain data in public methods
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.5, 6.4**
 
-  - [-] 10.5 Write property tests for webhook pipeline (Properties 9-13)
+  - [x] 10.5 Write property tests for webhook pipeline (Properties 9-13)
     - **Property 9: Adapter Resolution by Platform Identifier** — POST to /webhooks/{platformId} routes to correct adapter
     - **Property 10: Invalid Verification Token Returns 401** — invalid/missing tokens yield 401
     - **Property 11: Adapter Exception Returns 500** — adapter exceptions yield 500 with logging
@@ -234,21 +234,21 @@ Transform the existing skeleton console app into a full ASP.NET Core platform wi
     - **Property 13: Unmatched Platform Returns 404** — unknown platform IDs yield 404
     - **Validates: Requirements 7.2, 7.3, 7.5, 7.7, 7.8, 8.3, 8.5**
 
-  - [-] 10.6 Write property tests for DTO mapping (Properties 6, 8)
+  - [x] 10.6 Write property tests for DTO mapping (Properties 6, 8)
     - **Property 6: DTO-to-Domain Mapping Purity** — mapped Domain_Models contain no platform-specific types
     - **Property 8: Invalid DTO Rejection** — invalid DTOs produce MappingFailure with descriptive reason
     - **Validates: Requirements 6.3, 6.5**
 
-  - [-] 10.7 Write property tests for configuration validation (Property 5)
+  - [x] 10.7 Write property tests for configuration validation (Property 5)
     - **Property 5: Options Validation Rejects Invalid Configuration** — invalid options produce error with class name and failed property names
     - **Validates: Requirements 5.2, 5.3**
 
-  - [-] 10.8 Write property tests for deployment mode and observability (Properties 14, 15)
+  - [x] 10.8 Write property tests for deployment mode and observability (Properties 14, 15)
     - **Property 14: Adapter Span Attributes** — adapter processing creates spans with messaging.platform and messaging.operation attributes
     - **Property 15: Invalid Deployment Mode Fails Fast** — invalid DEPLOYMENT_MODE values cause startup failure with descriptive error
     - **Validates: Requirements 11.5, 13.4**
 
-  - [-] 10.9 Write unit tests for AdapterRegistry and WhatsApp adapter
+  - [x] 10.9 Write unit tests for AdapterRegistry and WhatsApp adapter
     - Test duplicate platform ID detection throws at construction
     - Test case-insensitive platform ID lookup
     - Test WhatsApp signature verification with valid/invalid tokens
@@ -256,7 +256,7 @@ Transform the existing skeleton console app into a full ASP.NET Core platform wi
     - Test WhatsApp verification challenge handling
     - _Requirements: 8.3, 8.5, 8.6, 6.5, 6.6_
 
-- [~] 11. Final checkpoint - Ensure full solution builds and all tests pass
+- [x] 11. Final checkpoint - Ensure full solution builds and all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

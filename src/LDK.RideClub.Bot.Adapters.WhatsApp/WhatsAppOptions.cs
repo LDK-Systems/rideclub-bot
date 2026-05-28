@@ -2,15 +2,13 @@
 // RideClub Bot — WhatsAppOptions (Req 5.1, 5.5)
 // ---------------------------------------------------------------------------
 
-namespace LDK.RideClub.Bot.Configuration;
+namespace LDK.RideClub.Bot.Adapters.WhatsApp;
 
 /// <summary>
 /// Strongly-typed configuration for the WhatsApp Business API adapter.
 /// Bound to the "Adapters:WhatsApp" configuration section.
 /// </summary>
-#pragma warning disable CA1812 // Instantiated via options binding
-internal sealed class WhatsAppOptions
-#pragma warning restore CA1812
+public sealed class WhatsAppOptions
 {
     /// <summary>
     /// The configuration section name used for binding.

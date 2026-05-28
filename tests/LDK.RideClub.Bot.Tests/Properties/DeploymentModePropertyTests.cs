@@ -48,7 +48,7 @@ public sealed class DeploymentModePropertyTests
         try
         {
             using var factory = new BotWebApplicationFactory();
-            using System.Net.Http.HttpClient client = factory.CreateClient();
+            using HttpClient client = factory.CreateClient();
 
             // If we can create a client, the host started successfully
             _ = client.Should().NotBeNull();

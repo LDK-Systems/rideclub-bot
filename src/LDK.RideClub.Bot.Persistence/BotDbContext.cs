@@ -16,6 +16,11 @@ public class BotDbContext(DbContextOptions<BotDbContext> options) : DbContext(op
     /// </summary>
     public DbSet<MessageLog> MessageLogs => Set<MessageLog>();
 
+    /// <summary>
+    /// Gets the set of conversation saga instances for MassTransit state machine persistence.
+    /// </summary>
+    public DbSet<ConversationSagaInstance> ConversationSagas => Set<ConversationSagaInstance>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

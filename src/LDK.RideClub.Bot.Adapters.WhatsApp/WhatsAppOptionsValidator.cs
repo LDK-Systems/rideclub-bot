@@ -4,15 +4,13 @@
 
 using FluentValidation;
 
-namespace LDK.RideClub.Bot.Configuration;
+namespace LDK.RideClub.Bot.Adapters.WhatsApp;
 
 /// <summary>
 /// FluentValidation validator for <see cref="WhatsAppOptions"/>.
 /// Ensures all credential fields are populated.
 /// </summary>
-#pragma warning disable CA1812 // Instantiated via DI
-internal sealed class WhatsAppOptionsValidator : AbstractValidator<WhatsAppOptions>
-#pragma warning restore CA1812
+public sealed class WhatsAppOptionsValidator : AbstractValidator<WhatsAppOptions>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="WhatsAppOptionsValidator"/> class.

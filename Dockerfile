@@ -18,7 +18,7 @@ COPY src/LDK.RideClub.Bot.Persistence/LDK.RideClub.Bot.Persistence.csproj src/LD
 COPY src/LDK.RideClub.Bot.Observability/LDK.RideClub.Bot.Observability.csproj src/LDK.RideClub.Bot.Observability/
 
 # Restore dependencies
-RUN dotnet restore
+RUN dotnet restore src/LDK.RideClub.Bot/RideClub.Bot.csproj
 
 # Copy all source code
 COPY src/ src/

@@ -12,6 +12,8 @@ using LDK.RideClub.Bot.Adapters.WhatsApp;
 using LDK.RideClub.Bot.Domain.Events;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Xunit;
 namespace LDK.RideClub.Bot.Tests.Unit;
@@ -97,6 +99,9 @@ public sealed class WhatsAppAdapterTests
         // Assert — write the result to a response and verify the body
         var responseContext = new DefaultHttpContext();
         responseContext.Response.Body = new MemoryStream();
+        responseContext.RequestServices = new ServiceCollection()
+            .AddLogging()
+            .BuildServiceProvider();
 
         await result.ExecuteAsync(responseContext);
 
@@ -121,6 +126,9 @@ public sealed class WhatsAppAdapterTests
         // Assert
         var responseContext = new DefaultHttpContext();
         responseContext.Response.Body = new MemoryStream();
+        responseContext.RequestServices = new ServiceCollection()
+            .AddLogging()
+            .BuildServiceProvider();
 
         await result.ExecuteAsync(responseContext);
 

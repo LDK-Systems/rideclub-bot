@@ -72,6 +72,26 @@ Each messaging platform lives in its own project (`LDK.RideClub.Bot.Adapters.{Pl
 
 WhatsApp webhook verification uses HMAC-SHA256 against the `X-Hub-Signature-256` header (not a plain token comparison). The `VerifyToken` config value is used as the HMAC key.
 
+### MediatR command pipeline
+
+Domain commands (`ProcessTextMessageCommand`, `ProcessBotCommandCommand`) implement `IRequest<MessageProcessingResult>` and live in `LDK.RideClub.Bot.Domain/Commands/`. All MediatR requests pass through three pipeline behaviors registered in order:
+
+1. `ValidationBehavior<TRequest, TResponse>` — runs all `IValidator<TRequest>` registered via FluentValidation; throws `ValidationException` on failure.
+2. `LoggingBehavior<TRequest, TResponse>` — logs request start/end with elapsed milliseconds.
+3. `TelemetryBehavior<TRequest, TResponse>` — wraps the handler in an OpenTelemetry activity span.
+
+`UnrecognisedEventNotification` (`INotification`) is published by the event dispatcher when no known command maps to an `InboundEvent` payload type.
+
+### MassTransit saga
+
+`ConversationStateMachine` (`MassTransitStateMachine<ConversationSagaInstance>`) tracks conversation lifecycle. It lives in `src/LDK.RideClub.Bot/Sagas/`. Correlation key: `"{Platform}:{SenderId}"`.
+
+States: `Initial → AwaitingInput → Processing → AwaitingInput | AwaitingConfirmation | Faulted | Completed`.
+
+Events: `MessageReceivedEvent`, `ProcessingCompletedEvent` (has `RequiresConfirmation` flag), `ProcessingFaultedEvent`, `ConversationTimedOutEvent`. All events live under `LDK.RideClub.Bot.Domain/Events/Conversation/`.
+
+Saga state is persisted via `MassTransit.EntityFrameworkCore` to `ConversationSagaInstance` (see `AddConversationSagas` migration). Unhandled transitions are silently ignored (`OnUnhandledEvent(x => x.Ignore())`).
+
 ### Placeholder implementations
 
 `LoggingEventProcessor` (the current `IEventProcessor`) only logs events — it has no real processing logic and is intended to be replaced. `WhatsAppMessagingAdapter.SendMessageAsync` is also a stub that always returns success.

@@ -4,6 +4,8 @@
 
 using FluentAssertions;
 
+using LDK.RideClub.Bot.Abstractions.Messaging;
+using LDK.RideClub.Bot.Adapters.WhatsApp;
 using LDK.RideClub.Bot.Configuration;
 
 using Microsoft.Extensions.Options;

@@ -1,0 +1,54 @@
+services:
+    bot:
+        environment:
+            - Otlp__Endpoint=http://otel-collector:4317
+        depends_on:
+            otel-collector:
+                condition: service_started
+
+    otel-collector:
+        image: otel/opentelemetry-collector-contrib:0.127.0
+        command: ["--config=/etc/otelcol/config.yml"]
+        volumes:
+            - ./observability/otel-collector.yml:/etc/otelcol/config.yml:ro
+        depends_on:
+            aspire-dashboard:
+                condition: service_started
+
+    prometheus:
+        image: prom/prometheus:v3.3.1
+        ports:
+            - "9090:9090"
+        command:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=7d
+        volumes:
+            - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus-data:/prometheus
+        depends_on:
+            otel-collector:
+                condition: service_started
+
+    grafana:
+        image: grafana/grafana:11.6.0
+        ports:
+            - "3000:3000"
+        environment:
+            # Anonymous admin — dev only, do not use in production
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+            - GF_AUTH_DISABLE_LOGIN_FORM=true
+        volumes:
+            - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+            - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+            - grafana-data:/var/lib/grafana
+        depends_on:
+            prometheus:
+                condition: service_started
+
+    aspire-dashboard:
+        image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+        ports:
+            - "18888:18888" # Traces / structured logs UI
+        environment:
+            - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true

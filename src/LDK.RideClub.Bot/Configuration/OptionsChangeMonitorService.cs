@@ -18,12 +18,10 @@ namespace LDK.RideClub.Bot.Configuration;
 internal sealed partial class OptionsChangeMonitorService(
     ILogger<OptionsChangeMonitorService> logger,
     IOptionsMonitor<WebhookOptions> webhookMonitor,
-    IOptionsMonitor<WhatsAppOptions> whatsAppMonitor,
     IOptionsMonitor<PersistenceOptions> persistenceMonitor,
     IOptionsMonitor<OtlpOptions> otlpMonitor,
     IOptionsMonitor<DeploymentOptions> deploymentMonitor,
     IValidator<WebhookOptions> webhookValidator,
-    IValidator<WhatsAppOptions> whatsAppValidator,
     IValidator<PersistenceOptions> persistenceValidator,
     IValidator<OtlpOptions> otlpValidator,
     IValidator<DeploymentOptions> deploymentValidator) : IHostedService, IDisposable
@@ -35,7 +33,6 @@ internal sealed partial class OptionsChangeMonitorService(
     public Task StartAsync(CancellationToken cancellationToken)
     {
         AddChangeListener(webhookMonitor, webhookValidator);
-        AddChangeListener(whatsAppMonitor, whatsAppValidator);
         AddChangeListener(persistenceMonitor, persistenceValidator);
         AddChangeListener(otlpMonitor, otlpValidator);
         AddChangeListener(deploymentMonitor, deploymentValidator);
@@ -53,12 +50,13 @@ internal sealed partial class OptionsChangeMonitorService(
     /// <inheritdoc/>
     public void Dispose()
     {
-        foreach (IDisposable listener in _changeListeners)
+        List<IDisposable> listeners = [.. _changeListeners];
+        _changeListeners.Clear();
+
+        foreach (IDisposable listener in listeners)
         {
             listener.Dispose();
         }
-
-        _changeListeners.Clear();
     }
 
     private void AddChangeListener<TOptions>(

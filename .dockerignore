@@ -11,20 +11,31 @@
 .vs/
 .vscode/
 .idea/
+.editorconfig
 *.user
 *.suo
 
 # Test results
+tests/
 **/TestResults/
 **/coverage*/
 
 # Docker
+.docker-cache/
 **/Dockerfile*
 **/docker-compose*
 **/.dockerignore
 
+# Local scripts
+*.sh
+
+# Local observability stack
+observability/
+
 # Documentation and specs
 .kiro/
+AGENTS.md
+CLAUDE.md
 README.md
 
 # OS files
