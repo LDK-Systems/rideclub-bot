@@ -1,55 +1,50 @@
 <Project>
 
-  <PropertyGroup>
+    <PropertyGroup>
 
-    <!-- Framework -->
+        <!-- Framework -->
 
-    <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
 
-    <!-- Language -->
+        <!-- Language -->
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
 
-    <LangVersion>latest</LangVersion>
+        <!-- Build -->
 
-    <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <Deterministic>true</Deterministic>
+        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">
+            true
+        </ContinuousIntegrationBuild>
 
-    <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Diagnostics -->
 
-    <!-- Build -->
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
 
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <AnalysisLevel>latest</AnalysisLevel>
 
-    <Deterministic>true</Deterministic>
+        <AnalysisMode>All</AnalysisMode>
 
-    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">
-      true
-    </ContinuousIntegrationBuild>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
-    <!-- Diagnostics -->
+        <!-- Packaging -->
 
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <AnalysisLevel>latest</AnalysisLevel>
+        <IncludeSymbols>true</IncludeSymbols>
 
-    <AnalysisMode>All</AnalysisMode>
+        <!-- Testing -->
 
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <IsPackable>false</IsPackable>
 
-    <!-- Packaging -->
+    </PropertyGroup>
 
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
 
-    <IncludeSymbols>true</IncludeSymbols>
+        <IsPackable>false</IsPackable>
 
-    <!-- Testing -->
-
-    <IsPackable>false</IsPackable>
-
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
-
-    <IsPackable>false</IsPackable>
-
-  </PropertyGroup>
+    </PropertyGroup>
 
 </Project>
