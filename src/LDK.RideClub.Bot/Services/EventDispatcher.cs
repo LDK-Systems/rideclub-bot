@@ -1,30 +1,28 @@
 // ---------------------------------------------------------------------------
-// RideClub Bot — EventDispatcher (Req 2.1–2.6, 8.1–8.3, 8.5)
+// RideClub Bot — EventDispatcher (Req 2.1–2.6, 8.3, 8.5)
 // ---------------------------------------------------------------------------
 
 using LDK.RideClub.Bot.Abstractions.Messaging;
 using LDK.RideClub.Bot.Domain.Commands;
 using LDK.RideClub.Bot.Domain.Events;
 using LDK.RideClub.Bot.Domain.Events.Conversation;
-using LDK.RideClub.Bot.Domain.Responses;
 
 using MassTransit;
-
-using MediatR;
+using MassTransit.Mediator;
 
 namespace LDK.RideClub.Bot.Services;
 
 /// <summary>
-/// Translates inbound webhook events into MediatR commands and publishes
-/// MassTransit conversation events to drive the state machine.
+/// Translates inbound webhook events into commands dispatched via MassTransit's
+/// scoped mediator and publishes conversation events to the bus for the state machine.
 /// Replaces <see cref="LoggingEventProcessor"/>.
 /// </summary>
-/// <param name="mediator">The MediatR mediator instance.</param>
+/// <param name="mediator">The MassTransit scoped mediator instance.</param>
 /// <param name="bus">The MassTransit bus instance.</param>
 /// <param name="logger">The logger instance.</param>
 #pragma warning disable CA1812 // Instantiated via DI
 internal sealed partial class EventDispatcher(
-    IMediator mediator,
+    IScopedMediator mediator,
     IBus bus,
     ILogger<EventDispatcher> logger) : IEventProcessor
 #pragma warning restore CA1812
@@ -34,29 +32,26 @@ internal sealed partial class EventDispatcher(
     {
         ArgumentNullException.ThrowIfNull(inboundEvent);
 
-        // 1. Publish MessageReceivedEvent to MassTransit (non-blocking on failure)
+        // 1. Publish MessageReceivedEvent to MassTransit Bus (fire-and-forget — independent of command dispatch success)
         await PublishMessageReceivedAsync(inboundEvent, ct).ConfigureAwait(false);
 
-        // 2. Map payload to MediatR command and dispatch
-        IRequest<MessageProcessingResult>? command = MapToCommand(inboundEvent);
+        // 2. Map payload to command and send via mediator
+        object? command = MapToCommand(inboundEvent);
 
         if (command is not null)
         {
-            // 3. Send command via MediatR — exceptions propagate to caller
-            MessageProcessingResult result = await mediator.Send(command, ct).ConfigureAwait(false);
-
-            // 4. Publish outcome event to MassTransit
-            await PublishOutcomeAsync(inboundEvent, result, ct).ConfigureAwait(false);
+            // Send command — mediator dispatches to consumer, exceptions propagate to caller
+            await mediator.Send(command, ct).ConfigureAwait(false);
         }
         else
         {
-            // Unknown payload type — publish notification and log warning
+            // Unknown payload type — publish notification via mediator and log warning
             LogUnrecognisedPayloadType(logger, inboundEvent.Payload.GetType().Name, inboundEvent.EventId);
             await mediator.Publish(new UnrecognisedEventNotification(inboundEvent), ct).ConfigureAwait(false);
         }
     }
 
-    private static IRequest<MessageProcessingResult>? MapToCommand(InboundEvent evt)
+    private static object? MapToCommand(InboundEvent evt)
     {
         return evt.Payload switch
         {
@@ -99,38 +94,6 @@ internal sealed partial class EventDispatcher(
 #pragma warning restore CA1031
         {
             LogBusPublishFailed(logger, nameof(MessageReceivedEvent), ex);
-        }
-    }
-
-    private async Task PublishOutcomeAsync(InboundEvent inboundEvent, MessageProcessingResult result, CancellationToken ct)
-    {
-        try
-        {
-            if (result.Success)
-            {
-                await bus.Publish(new ProcessingCompletedEvent
-                {
-                    Platform = inboundEvent.Platform,
-                    SenderId = inboundEvent.SenderId,
-                    RequiresConfirmation = false,
-                    ReplyMessage = result.ReplyMessage,
-                }, ct).ConfigureAwait(false);
-            }
-            else
-            {
-                await bus.Publish(new ProcessingFaultedEvent
-                {
-                    Platform = inboundEvent.Platform,
-                    SenderId = inboundEvent.SenderId,
-                    ErrorReason = result.ErrorReason ?? "Unknown error",
-                }, ct).ConfigureAwait(false);
-            }
-        }
-#pragma warning disable CA1031 // Intentionally catching all exceptions — bus failures must not block processing
-        catch (Exception ex)
-#pragma warning restore CA1031
-        {
-            LogBusPublishFailed(logger, "OutcomeEvent", ex);
         }
     }
 

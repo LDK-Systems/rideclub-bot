@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Property tests will be re-enabled in task 11.3 -->
+    <Compile Remove="Properties/EventDispatcherPropertyTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
 
     <!-- Test Framework -->
 

@@ -1,19 +1,16 @@
 // ---------------------------------------------------------------------------
-// RideClub Bot — EventDispatcher Unit Tests (Req 2.1–2.5, 8.1–8.3, 8.5)
+// RideClub Bot — EventDispatcher Unit Tests (Req 2.1–2.5, 8.3, 8.5)
 // ---------------------------------------------------------------------------
 
 using FluentAssertions;
 
-using LDK.RideClub.Bot.Abstractions.Messaging;
 using LDK.RideClub.Bot.Domain.Commands;
 using LDK.RideClub.Bot.Domain.Events;
 using LDK.RideClub.Bot.Domain.Events.Conversation;
-using LDK.RideClub.Bot.Domain.Responses;
 using LDK.RideClub.Bot.Services;
 
 using MassTransit;
-
-using MediatR;
+using MassTransit.Mediator;
 
 using Microsoft.Extensions.Logging;
 
@@ -30,14 +27,14 @@ namespace LDK.RideClub.Bot.Tests.Unit;
 /// </summary>
 public sealed class EventDispatcherTests
 {
-    private readonly IMediator _mediator;
+    private readonly IScopedMediator _mediator;
     private readonly IBus _bus;
     private readonly FakeLogger<EventDispatcher> _logger;
     private readonly EventDispatcher _sut;
 
     public EventDispatcherTests()
     {
-        _mediator = Substitute.For<IMediator>();
+        _mediator = Substitute.For<IScopedMediator>();
         _bus = Substitute.For<IBus>();
         _logger = new FakeLogger<EventDispatcher>();
         _sut = new EventDispatcher(_mediator, _bus, _logger);
@@ -102,24 +99,6 @@ public sealed class EventDispatcherTests
         };
     }
 
-    private void SetupMediatorSuccess(MessageProcessingResult? result = null)
-    {
-        result ??= new MessageProcessingResult { Success = true, ReplyMessage = "OK" };
-        _mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
-            .Returns(result);
-    }
-
-    private void SetupMediatorFailureResult()
-    {
-        MessageProcessingResult result = new()
-        {
-            Success = false,
-            ErrorReason = "Domain error occurred"
-        };
-        _mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
-            .Returns(result);
-    }
-
     /// <summary>A payload type unknown to the EventDispatcher for testing the unrecognised path.</summary>
     private sealed record UnknownTestPayload : EventPayload;
 
@@ -136,20 +115,26 @@ public sealed class EventDispatcherTests
             conversationId: "conv-99",
             platform: "telegram",
             text: "Hi there");
-        SetupMediatorSuccess();
+
+        object? capturedCommand = null;
+        _mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(ci => capturedCommand = ci.Arg<object>());
 
         // Act
         await _sut.ProcessAsync(evt, CancellationToken.None);
 
         // Assert
-        await _mediator.Received(1).Send(
-            Arg.Is<ProcessTextMessageCommand>(cmd =>
-                cmd.SenderId == "user-42" &&
-                cmd.ConversationId == "conv-99" &&
-                cmd.Platform == "telegram" &&
-                cmd.MessageText == "Hi there" &&
-                cmd.Timestamp == evt.Timestamp),
-            Arg.Any<CancellationToken>());
+        await _mediator.Received(1).Send(Arg.Any<object>(), Arg.Any<CancellationToken>());
+        capturedCommand.Should().BeOfType<ProcessTextMessageCommand>()
+            .Which.Should().BeEquivalentTo(new
+            {
+                SenderId = "user-42",
+                ConversationId = "conv-99",
+                Platform = "telegram",
+                MessageText = "Hi there",
+                evt.Timestamp,
+            });
     }
 
     // -----------------------------------------------------------------------
@@ -167,21 +152,23 @@ public sealed class EventDispatcherTests
             platform: "whatsapp",
             commandName: "/help",
             arguments: args);
-        SetupMediatorSuccess();
+
+        object? capturedCommand = null;
+        _mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(ci => capturedCommand = ci.Arg<object>());
 
         // Act
         await _sut.ProcessAsync(evt, CancellationToken.None);
 
         // Assert
-        await _mediator.Received(1).Send(
-            Arg.Is<ProcessBotCommandCommand>(cmd =>
-                cmd.SenderId == "user-7" &&
-                cmd.ConversationId == "conv-3" &&
-                cmd.Platform == "whatsapp" &&
-                cmd.CommandName == "/help" &&
-                cmd.Arguments == args &&
-                cmd.Timestamp == evt.Timestamp),
-            Arg.Any<CancellationToken>());
+        ProcessBotCommandCommand cmd = capturedCommand.Should().BeOfType<ProcessBotCommandCommand>().Subject;
+        cmd.SenderId.Should().Be("user-7");
+        cmd.ConversationId.Should().Be("conv-3");
+        cmd.Platform.Should().Be("whatsapp");
+        cmd.CommandName.Should().Be("/help");
+        cmd.Arguments.Should().BeSameAs(args);
+        cmd.Timestamp.Should().Be(evt.Timestamp);
     }
 
     // -----------------------------------------------------------------------
@@ -194,17 +181,21 @@ public sealed class EventDispatcherTests
         // Arrange
         InboundEvent evt = CreateUnknownPayloadEvent();
 
+        UnrecognisedEventNotification? capturedNotification = null;
+        _mediator.Publish(Arg.Any<UnrecognisedEventNotification>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(ci => capturedNotification = ci.Arg<UnrecognisedEventNotification>());
+
         // Act
         await _sut.ProcessAsync(evt, CancellationToken.None);
 
         // Assert — should publish notification, not send a command
         await _mediator.Received(1).Publish(
-            Arg.Is<UnrecognisedEventNotification>(n => n.Event == evt),
-            Arg.Any<CancellationToken>());
+            Arg.Any<UnrecognisedEventNotification>(), Arg.Any<CancellationToken>());
+        capturedNotification.Should().NotBeNull();
+        capturedNotification!.Event.Should().BeSameAs(evt);
 
-        await _mediator.DidNotReceive().Send(
-            Arg.Any<IRequest<MessageProcessingResult>>(),
-            Arg.Any<CancellationToken>());
+        await _mediator.DidNotReceive().Send(Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -241,8 +232,8 @@ public sealed class EventDispatcherTests
             .Returns(Task.CompletedTask)
             .AndDoes(_ => callOrder.Add("bus_publish_received"));
 
-        _mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
-            .Returns(new MessageProcessingResult { Success = true })
+        _mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
             .AndDoes(_ => callOrder.Add("mediator_send"));
 
         // Act
@@ -260,7 +251,6 @@ public sealed class EventDispatcherTests
             senderId: "user-abc",
             conversationId: "conv-xyz",
             platform: "telegram");
-        SetupMediatorSuccess();
 
         // Act
         await _sut.ProcessAsync(evt, CancellationToken.None);
@@ -277,62 +267,6 @@ public sealed class EventDispatcherTests
     }
 
     // -----------------------------------------------------------------------
-    // Test: ProcessingCompletedEvent is published on success (Req 8.1)
-    // -----------------------------------------------------------------------
-
-    [Fact]
-    public async Task ProcessAsync_OnSuccess_PublishesProcessingCompletedEvent()
-    {
-        // Arrange
-        InboundEvent evt = CreateTextMessageEvent(
-            senderId: "user-5",
-            platform: "whatsapp");
-        MessageProcessingResult result = new()
-        {
-            Success = true,
-            ReplyMessage = "All good"
-        };
-        SetupMediatorSuccess(result);
-
-        // Act
-        await _sut.ProcessAsync(evt, CancellationToken.None);
-
-        // Assert
-        await _bus.Received(1).Publish(
-            Arg.Is<ProcessingCompletedEvent>(e =>
-                e.Platform == "whatsapp" &&
-                e.SenderId == "user-5" &&
-                !e.RequiresConfirmation &&
-                e.ReplyMessage == "All good"),
-            Arg.Any<CancellationToken>());
-    }
-
-    // -----------------------------------------------------------------------
-    // Test: ProcessingFaultedEvent is published on domain error (Req 8.2)
-    // -----------------------------------------------------------------------
-
-    [Fact]
-    public async Task ProcessAsync_OnDomainError_PublishesProcessingFaultedEvent()
-    {
-        // Arrange
-        InboundEvent evt = CreateTextMessageEvent(
-            senderId: "user-9",
-            platform: "telegram");
-        SetupMediatorFailureResult();
-
-        // Act
-        await _sut.ProcessAsync(evt, CancellationToken.None);
-
-        // Assert
-        await _bus.Received(1).Publish(
-            Arg.Is<ProcessingFaultedEvent>(e =>
-                e.Platform == "telegram" &&
-                e.SenderId == "user-9" &&
-                e.ErrorReason == "Domain error occurred"),
-            Arg.Any<CancellationToken>());
-    }
-
-    // -----------------------------------------------------------------------
     // Test: Exception propagation from mediator (Req 2.5)
     // -----------------------------------------------------------------------
 
@@ -342,46 +276,36 @@ public sealed class EventDispatcherTests
         // Arrange
         InboundEvent evt = CreateTextMessageEvent();
         InvalidOperationException expectedException = new("No handler registered");
-        _mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
+        _mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(expectedException);
 
         // Act
         Func<Task> act = () => _sut.ProcessAsync(evt, CancellationToken.None);
 
-        // Assert — exception propagates without being caught
+        // Assert — exception propagates without being caught or wrapped
         (await act.Should().ThrowAsync<InvalidOperationException>())
             .Which.Should().BeSameAs(expectedException);
     }
 
     [Fact]
-    public async Task ProcessAsync_WhenMediatorThrows_DoesNotPublishOutcomeEvent()
+    public async Task ProcessAsync_WhenMediatorThrowsTimeoutException_PropagatesExactType()
     {
         // Arrange
-        InboundEvent evt = CreateTextMessageEvent();
-        _mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
-            .ThrowsAsync(new InvalidOperationException("Handler failure"));
+        InboundEvent evt = CreateCommandEvent();
+        TimeoutException expectedException = new("Consumer timed out");
+        _mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(expectedException);
 
         // Act
-        try
-        {
-            await _sut.ProcessAsync(evt, CancellationToken.None);
-        }
-        catch (InvalidOperationException)
-        {
-            // Expected
-        }
+        Func<Task> act = () => _sut.ProcessAsync(evt, CancellationToken.None);
 
-        // Assert — no outcome event should be published since the exception propagated
-        await _bus.DidNotReceive().Publish(
-            Arg.Any<ProcessingCompletedEvent>(),
-            Arg.Any<CancellationToken>());
-        await _bus.DidNotReceive().Publish(
-            Arg.Any<ProcessingFaultedEvent>(),
-            Arg.Any<CancellationToken>());
+        // Assert — exact exception type propagates (not wrapped in AggregateException etc.)
+        (await act.Should().ThrowAsync<TimeoutException>())
+            .Which.Should().BeSameAs(expectedException);
     }
 
     // -----------------------------------------------------------------------
-    // Test: Bus unavailability logs warning and continues (Req 8.5)
+    // Test: Bus failure resilience — log warning, continue (Req 8.5)
     // -----------------------------------------------------------------------
 
     [Fact]
@@ -391,7 +315,6 @@ public sealed class EventDispatcherTests
         InboundEvent evt = CreateTextMessageEvent();
         _bus.Publish(Arg.Any<MessageReceivedEvent>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new TimeoutException("Bus unavailable"));
-        SetupMediatorSuccess();
 
         // Act — should not throw
         await _sut.ProcessAsync(evt, CancellationToken.None);
@@ -401,38 +324,36 @@ public sealed class EventDispatcherTests
             e.LogLevel == LogLevel.Warning &&
             e.Message.Contains("MessageReceivedEvent"));
 
-        // Assert — mediator.Send still called (processing continues)
+        // Assert — mediator.Send still called (processing continues despite bus failure)
         await _mediator.Received(1).Send(
-            Arg.Any<IRequest<MessageProcessingResult>>(),
+            Arg.Any<object>(),
             Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task ProcessAsync_WhenOutcomePublishFails_LogsWarningAndCompletes()
+    public async Task ProcessAsync_WhenBusPublishFails_StillDispatchesCommand()
     {
         // Arrange
-        InboundEvent evt = CreateTextMessageEvent();
-        SetupMediatorSuccess();
-
-        // First bus.Publish (MessageReceivedEvent) succeeds
+        InboundEvent evt = CreateCommandEvent(commandName: "/status");
         _bus.Publish(Arg.Any<MessageReceivedEvent>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+            .ThrowsAsync(new InvalidOperationException("Transport not started"));
 
-        // Second bus.Publish (ProcessingCompletedEvent) fails
-        _bus.Publish(Arg.Any<ProcessingCompletedEvent>(), Arg.Any<CancellationToken>())
-            .ThrowsAsync(new TimeoutException("Bus unavailable for outcome"));
+        object? capturedCommand = null;
+        _mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(ci => capturedCommand = ci.Arg<object>());
 
-        // Act — should not throw
+        // Act
         await _sut.ProcessAsync(evt, CancellationToken.None);
 
-        // Assert — warning logged about outcome publish failure
-        _logger.Entries.Should().Contain(e =>
-            e.LogLevel == LogLevel.Warning &&
-            e.Message.Contains("OutcomeEvent"));
+        // Assert — command dispatch proceeds despite bus failure
+        await _mediator.Received(1).Send(Arg.Any<object>(), Arg.Any<CancellationToken>());
+        capturedCommand.Should().BeOfType<ProcessBotCommandCommand>()
+            .Which.CommandName.Should().Be("/status");
     }
 
     // -----------------------------------------------------------------------
-    // Fake Logger (same pattern as LoggingBehaviorTests)
+    // Fake Logger (same pattern as other test files)
     // -----------------------------------------------------------------------
 
     private sealed class FakeLogger<T> : ILogger<T>

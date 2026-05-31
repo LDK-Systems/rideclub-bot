@@ -1,13 +1,9 @@
-using LDK.RideClub.Bot.Domain.Responses;
-
-using MediatR;
-
 namespace LDK.RideClub.Bot.Domain.Commands;
 
 /// <summary>
 /// Command to process a parsed bot command from a user.
 /// </summary>
-public sealed record ProcessBotCommandCommand : IRequest<MessageProcessingResult>
+public sealed record ProcessBotCommandCommand
 {
     /// <summary>Gets the platform-specific sender identifier.</summary>
     public required string SenderId { get; init; }

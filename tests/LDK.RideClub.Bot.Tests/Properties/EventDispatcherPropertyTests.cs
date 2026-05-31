@@ -18,7 +18,7 @@ using LDK.RideClub.Bot.Services;
 
 using MassTransit;
 
-using MediatR;
+using MassTransit.Mediator;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -58,12 +58,12 @@ public sealed class EventDispatcherPropertyTests
     {
         // Arrange
         InboundEvent evt = wrapper.Event;
-        IMediator mediator = Substitute.For<IMediator>();
+        IMediator mediator = Substitute.For<IScopedMediator>();
         IBus bus = Substitute.For<IBus>();
         NullLogger<EventDispatcher> logger = NullLogger<EventDispatcher>.Instance;
         EventDispatcher sut = new(mediator, bus, logger);
 
-        mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
+        mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
             .Returns(new MessageProcessingResult { Success = true });
 
         // Act
@@ -71,7 +71,7 @@ public sealed class EventDispatcherPropertyTests
 
         // Assert — exactly one Send call
         await mediator.Received(1).Send(
-            Arg.Any<IRequest<MessageProcessingResult>>(),
+            Arg.Any<object>(),
             Arg.Any<CancellationToken>());
 
         // Assert — no Publish of UnrecognisedEventNotification
@@ -93,7 +93,7 @@ public sealed class EventDispatcherPropertyTests
     {
         // Arrange
         InboundEvent evt = wrapper.Event;
-        IMediator mediator = Substitute.For<IMediator>();
+        IMediator mediator = Substitute.For<IScopedMediator>();
         IBus bus = Substitute.For<IBus>();
         NullLogger<EventDispatcher> logger = NullLogger<EventDispatcher>.Instance;
         EventDispatcher sut = new(mediator, bus, logger);
@@ -108,7 +108,7 @@ public sealed class EventDispatcherPropertyTests
 
         // Assert — no Send call
         await mediator.DidNotReceive().Send(
-            Arg.Any<IRequest<MessageProcessingResult>>(),
+            Arg.Any<object>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -132,17 +132,17 @@ public sealed class EventDispatcherPropertyTests
     {
         // Arrange
         InboundEvent evt = wrapper.Event;
-        IMediator mediator = Substitute.For<IMediator>();
+        IMediator mediator = Substitute.For<IScopedMediator>();
         IBus bus = Substitute.For<IBus>();
         NullLogger<EventDispatcher> logger = NullLogger<EventDispatcher>.Instance;
         EventDispatcher sut = new(mediator, bus, logger);
 
         ProcessTextMessageCommand? capturedCommand = null;
-        mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
+        mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
             .Returns(new MessageProcessingResult { Success = true })
             .AndDoes(callInfo =>
             {
-                if (callInfo.Arg<IRequest<MessageProcessingResult>>() is ProcessTextMessageCommand cmd)
+                if (callInfo.Arg<object>() is ProcessTextMessageCommand cmd)
                 {
                     capturedCommand = cmd;
                 }
@@ -178,17 +178,17 @@ public sealed class EventDispatcherPropertyTests
     {
         // Arrange
         InboundEvent evt = wrapper.Event;
-        IMediator mediator = Substitute.For<IMediator>();
+        IMediator mediator = Substitute.For<IScopedMediator>();
         IBus bus = Substitute.For<IBus>();
         NullLogger<EventDispatcher> logger = NullLogger<EventDispatcher>.Instance;
         EventDispatcher sut = new(mediator, bus, logger);
 
         ProcessBotCommandCommand? capturedCommand = null;
-        mediator.Send(Arg.Any<IRequest<MessageProcessingResult>>(), Arg.Any<CancellationToken>())
+        mediator.Send(Arg.Any<object>(), Arg.Any<CancellationToken>())
             .Returns(new MessageProcessingResult { Success = true })
             .AndDoes(callInfo =>
             {
-                if (callInfo.Arg<IRequest<MessageProcessingResult>>() is ProcessBotCommandCommand cmd)
+                if (callInfo.Arg<object>() is ProcessBotCommandCommand cmd)
                 {
                     capturedCommand = cmd;
                 }

@@ -31,8 +31,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
     _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.MessagingModule());
     _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.PersistenceModule());
     _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.ObservabilityModule());
-    _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.SagaModule());
-    _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.MediatorModule());
+    _ = containerBuilder.RegisterModule(new LDK.RideClub.Bot.Modules.MassTransitModule());
 
     // Discover and load adapter Autofac modules from assemblies matching the naming convention.
     // This is Autofac's native assembly-scanning mechanism — any assembly in the output directory
@@ -67,6 +66,9 @@ builder.Services.AddBotPersistence(builder.Configuration);
 
 // Step 6c2: Register MassTransit with saga state machine and in-memory transport (Req 5.3, 5.4, 5.5)
 builder.Services.AddBotMassTransit(builder.Configuration);
+
+// Step 6c3: Register MassTransit mediator with consumers and pipeline filters (Req 1.1, 1.2, 1.4)
+builder.Services.AddBotMediator();
 
 // Step 6d: Register OpenTelemetry observability pipeline (Req 11.1, 11.2)
 builder.Services.AddBotObservability(builder.Configuration);

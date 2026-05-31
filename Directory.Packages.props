@@ -6,10 +6,6 @@
         <!-- MassTransit -->
         <PackageVersion Include="MassTransit" Version="9.1.1" />
         <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="9.1.1" />
-        <!-- MediatR -->
-        <PackageVersion Include="MediatR" Version="12.5.0" />
-        <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
-        <PackageVersion Include="MediatR.Extensions.Autofac.DependencyInjection" Version="12.1.0" />
         <!-- Dependency Injection -->
         <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.8">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
